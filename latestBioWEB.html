@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BioTech Hub</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/7237/7237724.png" type="image/x-icon" />
+
+
+  <!-- EmailJS (contact form) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f8fa; color: #2c3e50; }
+
+    /* Header / Nav */
+    header { position: sticky; top: 0; z-index: 1000; background: #2c3e50; color: #fff; }
+    .nav-wrap { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-weight: 800; letter-spacing: .5px; }
+    nav ul { display: flex; gap: 22px; list-style: none; }
+    nav a { color: #ecf0f1; text-decoration: none; font-weight: 600; }
+    nav a:hover { color: #1abc9c; }
+
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; }
+    .hamburger span { width: 26px; height: 3px; background: #ecf0f1; border-radius: 2px; }
+    .mobile-menu { display: none; flex-direction: column; background: #34495e; }
+    .mobile-menu a { padding: 12px 18px; color: #ecf0f1; border-top: 1px solid rgba(255,255,255,.08); text-decoration: none; }
+    .mobile-menu a:hover { background: rgba(255,255,255,.06); }
+
+    /* Sections */
+    section { padding: 70px 18px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* Hero */
+    .hero { min-height: 76vh; display: grid; place-items: center; text-align: center; color: #fff; background: url('https://images.unsplash.com/photo-1581091012184-5c02f14f2d3d?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat; position: relative; }
+    .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.5)); }
+    .hero-inner { position: relative; z-index: 1; padding: 18px; }
+    .hero h1 { font-size: clamp(28px, 4vw, 48px); margin-bottom: 12px; }
+    .hero p { font-size: clamp(14px, 1.6vw, 18px); max-width: 760px; margin: 0 auto; opacity: .95; }
+
+    /* Cards & grids */
+    .grid { display: grid; gap: 20px; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr; } }
+    .card { background: #fff; border: 1px solid #e6ecf1; border-radius: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.04); padding: 18px; }
+    .card h3 { margin-bottom: 6px; color: #1f7a8c; }
+    .meta { font-size: 13px; color: #6b7c93; }
+
+    /* Events public cards */
+    .event-card { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start; }
+    .event-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #eef3f7; }
+    @media (max-width: 560px) { .event-card { grid-template-columns: 1fr; } .event-poster { height: 180px; } }
+
+    /* Search + Tabs */
+    .event-search { width:100%; padding:12px; border:1px solid #d9e2ec; border-radius:10px; margin-bottom:14px; font-size:14px; }
+    .event-tabs { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+    .event-tab-btn { padding:8px 14px; border:1px solid #dbe4ef; background:#f7fafc; border-radius:8px; cursor:pointer; font-weight:600; }
+    .event-tab-btn.active { background:#34495e; color:#fff; border-color:#34495e; }
+
+    /* Testimonials */
+    #testimonials { padding: 60px 20px; background: #eef3f7; text-align: center; }
+    .testimonial-card{flex:0 0 280px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.05);scroll-snap-align:start;}
+    .testimonial-slider { max-width: 700px; margin: 30px auto; position: relative; }
+    .slides { position: relative; overflow: hidden; min-height: 160px; }
+    .slide { display: none; opacity: 0; transition: opacity 0.6s ease; padding: 20px; }
+    .slide.active { display: block; opacity: 1; }
+    .slide p { font-size: 1.05rem; font-style: italic; margin-bottom: 12px; color: #333; }
+    .slide h4 { color: #555; font-weight: 600; margin-top:10px; }
+    .dots { margin-top: 15px; }
+    .dots button { height: 12px; width: 12px; margin: 0 5px; border-radius: 50%; border: none; background: #ccc; cursor: pointer; transition: background 0.3s; }
+    .dots button.active { background: #34495e; }
+
+    /* Contact */
+    .contact { display: grid; place-items: center; }
+    .contact-box { width: 100%; max-width: 520px; }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    input, textarea, select { width: 100%; padding: 12px; border: 1px solid #d9e2ec; border-radius: 10px; font-size: 14px; }
+    textarea { resize: vertical; min-height: 120px; }
+    .btn { background: #1abc9c; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .btn.secondary { background: #8898aa; }
+    .btn:disabled { opacity: .7; cursor: not-allowed; }
+
+    .alert { display: none; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; text-align: center; }
+    .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* Admin area (inside modal) */
+    .admin-wrap { display: grid; gap: 20px; grid-template-columns: 1fr; }
+    .admin-card { padding: 18px; }
+    .poster-preview { width: 100%; max-height: 200px; object-fit: contain; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 8px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid #e6ecf1; text-align: left; vertical-align: top; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    footer { background: #2c3e50; color: #ecf0f1; padding: 24px 18px; text-align: center; margin-top: 30px; cursor: pointer; }
+
+    /* Responsive nav */
+    @media (max-width: 820px) {
+      nav ul { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* Modal (hidden admin) */
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center; }
+    .modal-inner { width: min(1000px, 94vw); max-height: 90vh; overflow:auto; background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eef2f7; position:sticky; top:0; background:#fff; z-index:5; }
+    .modal-body { padding: 16px; }
+    .close-x { border:none; background:transparent; font-size:22px; cursor:pointer; }
+
+    /* Admin Tabs */
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab-btn { border:1px solid #dbe4ef; background:#f7fafc; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+    .tab-btn.active { background:#34495e; color:#fff; border-color:#34495e; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="nav-wrap">
+      <div class="logo">BioTech Hub</div>
+      <nav>
+        <ul id="desktopNav">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#events">Events</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#events">Events</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="home" class="hero" style="background-image: url('https://plus.unsplash.com/premium_photo-1681487546184-98bd8bacc20a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmlvdGVjaHxlbnwwfHwwfHx8MA%3D%3D');">
+    <div class="hero-inner container" >
+      <h1>Innovating the Future of Biotechnology</h1>
+      <p>Discover global biotech events, collaborate with researchers, and explore cutting-edge projects in genomics, bioinformatics, and sustainable biotech.</p>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about">
+    <div class="container grid grid-3">
+      <div class="card"><h3>Our Vision</h3><p>Advance human health and sustainability through open collaboration and scientific excellence.</p></div>
+      <div class="card"><h3>What We Do</h3><p>Host conferences, publish research spotlights, and connect labs with industry for faster real-world impact.</p></div>
+      <div class="card"><h3>Focus Areas</h3><p>Genomics, drug discovery, AI for biology, and green biotechnology.</p></div>
+    </div>
+  </section>
+
+  <!-- Events (Public) -->
+  <section id="events">
+    <div class="container">
+      <h2>Events</h2>
+      <p class="meta" style="margin:6px 0 16px">Managed by Admin • Auto-updates</p>
+
+      <!-- Search -->
+      <input id="eventSearch" class="event-search" type="text" placeholder="Search events by name, date, or location..." />
+
+      <!-- Tabs -->
+      <div id="eventTabs" class="event-tabs">
+        <button class="event-tab-btn active" data-tab="all">All</button>
+        <button class="event-tab-btn" data-tab="upcoming">Upcoming</button>
+        <button class="event-tab-btn" data-tab="past">Past</button>
+      </div>
+
+      <!-- Event list -->
+      <div id="eventList" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));"></div>
+      <div id="noEvents" class="card" style="display:none; text-align:center;">No events found.</div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <h2>What People Say</h2>
+      <div class="testimonial-slider">
+        <div class="slides" id="testimonialList"></div>
+        <div class="dots" id="testimonialDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="contact">
+    <div class="container contact-box card">
+      <h2 style="text-align:center; margin-bottom: 10px;">Contact Us</h2>
+      <div id="successMsg" class="alert success">✅ Your message has been sent successfully!</div>
+      <div id="errorMsg" class="alert error">❌ Failed to send message. Please try again.</div>
+      <form id="contactForm">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Your Name" required />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="your@email.com" required />
+        </div>
+        <div class="field">
+          <label for="phone">Contact No</label>
+          <input id="phone" type="text" placeholder="Your phone number" required />
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Write your message..." required></textarea>
+        </div>
+        <button id="sendBtn" class="btn" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer id="footerTrigger" title="Click to open Admin (or press Ctrl+Alt+B)">
+    © 2025 BioTech Hub — Research • Events • Collaboration
+  </footer>
+
+  <!-- Hidden Admin Modal (Login + Dashboard) -->
+  <div class="modal" id="adminModal" aria-hidden="true">
+    <div class="modal-inner" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+      <div class="modal-header">
+        <strong id="adminTitle">Admin</strong>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn secondary" id="logoutBtn" style="display:none; padding:8px 12px;">Logout</button>
+          <button class="close-x" id="closeAdmin" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <!-- Login -->
+        <div id="loginPanel" class="card admin-card" style="max-width:520px; margin:0 auto;">
+          <h2 style="margin-bottom:10px;">Admin Login</h2>
+          <div class="field"><label for="adminUser">Username</label><input id="adminUser" type="text" placeholder="admin" /></div>
+          <div class="field"><label for="adminPass">Password</label><input id="adminPass" type="password" placeholder="••••••" /></div>
+          <div class="actions"><button class="btn" id="loginBtn">Login</button></div>
+          <div id="loginError" class="alert error" style="margin-top:10px;">Invalid credentials</div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" style="display:none;" class="admin-wrap">
+          <div class="card admin-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h2 style="margin:0;">Dashboard</h2>
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="tab-events">Events</button>
+                <button class="tab-btn" data-tab="tab-contacts">Contact Submissions</button>
+                <button class="tab-btn" data-tab="tab-testimonials">Testimonials</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- EVENTS TAB -->
+          <div id="tab-events" class="tab-panel active">
+            <div class="card admin-card">
+              <h3 style="margin-bottom:8px;">Add / Edit Event</h3>
+              <input type="hidden" id="editingId" />
+              <div class="field"><label for="evTitle">Title</label><input id="evTitle" type="text" placeholder="e.g., International Biotech Summit" /></div>
+              <div class="field"><label for="evDate">Date</label><input id="evDate" type="date" /></div>
+              <div class="field"><label for="evLocation">Location</label><input id="evLocation" type="text" placeholder="City, Country" /></div>
+              <div class="field"><label for="evDesc">Description</label><textarea id="evDesc" rows="4" placeholder="Short description"></textarea></div>
+              <div class="field">
+                <label for="evPoster">Poster / Cover (JPEG/PNG)</label>
+                <input id="evPoster" type="file" accept="image/*" />
+                <img id="posterPreview" class="poster-preview" alt="Poster preview" style="display:none;" />
+              </div>
+              <div class="actions">
+                <button class="btn" id="saveEventBtn">Save Event</button>
+                <button class="btn secondary" id="resetEventBtn" type="button">Reset</button>
+              </div>
+              <div id="saveMsg" class="alert success" style="margin-top:10px;">Event saved!</div>
+            </div>
+
+            <div class="card admin-card" style="overflow-x:auto;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <h3 style="margin-bottom:8px;">Manage Events</h3>
+                <div class="actions">
+                  <button class="btn secondary" id="clearAllEventsBtn">Clear All</button>
+                </div>
+              </div>
+              <table class="admin-table" id="adminTable">
+                <thead>
+                  <tr><th>Poster</th><th>Title</th><th>Date</th><th>Location</th><th>Description</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="adminTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- CONTACTS TAB -->
+          <div id="tab-contacts" class="tab-panel">
+            <div class="card admin-card" style="overflow-x:auto;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <h3 style="margin-bottom:8px;">Contact Submissions</h3>
+                <div class="actions">
+                
+                  <button class="btn" id="downloadCsvBtn">Download CSV</button>
+                  <button class="btn secondary" id="clearSubsBtn">Clear All</button>
+                </div>
+              </div>
+              <table class="admin-table" id="subsTable">
+                <thead>
+                  <tr><th>Name</th><th>Email</th><th>Contact No</th><th>Message</th><th>Time</th></tr>
+                </thead>
+                <tbody id="subsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TESTIMONIALS TAB -->
+          <div id="tab-testimonials" class="tab-panel">
+            <div class="card admin-card">
+              <h3 style="margin-bottom:8px;">Add Testimonial</h3>
+              <form id="testimonialForm">
+                <div class="field"><label for="tName">Name</label><input id="tName" type="text" placeholder="Reviewer name" required /></div>
+                <div class="field"><label for="tMessage">Message</label><textarea id="tMessage" rows="3" placeholder="Testimonial message" required></textarea></div>
+                <div class="field"><label for="tImageFile">Image (optional)</label><input id="tImageFile" type="file" accept="image/*" /></div>
+                <div class="actions"><button class="btn" type="submit">Add Testimonial</button></div>
+              </form>
+            </div>
+
+            <div class="card admin-card" style="overflow-x:auto;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                <h3 style="margin-bottom:8px;">Manage Testimonials</h3>
+              </div>
+              <ul id="testimonialAdminList" style="list-style:none; padding:0; margin:0;"></ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- CONFIG ----------
+    const CONFIG = {
+      EMAILJS_PUBLIC_KEY: '75870YUDiUwmzJHyx',     // <-- replace if required
+      EMAILJS_SERVICE_ID: 'service_tbmmgvn',     // <-- replace if required
+      EMAILJS_TEMPLATE_ID: 'template_95lhklo',   // <-- replace if required
+      ADMIN_USER: 'admin',
+      ADMIN_PASS: 'biotech123'
+    };
+
+    // ---------- Storage Keys ----------
+    const KEYS = {
+      EVENTS: 'biotech_events_v1',
+      AUThed: 'biotech_admin_authed',
+      SUBS: 'biotech_contact_submissions_v1',
+      TESTIMONIALS: 'biotech_testimonials_v1'
+    };
+
+    // ---------- Helper: alerts ----------
+    function flash(id, ms=3500){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.style.display = 'block';
+      setTimeout(()=> el.style.display = 'none', ms);
+    }
+
+    // ---------- EmailJS init ----------
+    (function(){
+      try { emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY); } catch(e) { /* ignore if not available */ }
+    })();
+
+    // ---------- Mobile nav toggle ----------
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => {
+      const now = window.getComputedStyle(mobileMenu).display;
+      mobileMenu.style.display = now === 'flex' ? 'none' : 'flex';
+      mobileMenu.style.flexDirection = 'column';
+    });
+
+    // ---------- Events storage helpers ----------
+    function loadEvents(){
+      try { return JSON.parse(localStorage.getItem(KEYS.EVENTS)) || []; }
+      catch { return []; }
+    }
+    function saveEvents(events){ localStorage.setItem(KEYS.EVENTS, JSON.stringify(events)); }
+
+    // ---------- Testimonials storage helpers ----------
+    function loadTestimonials(){
+      try { return JSON.parse(localStorage.getItem(KEYS.TESTIMONIALS)) || []; }
+      catch { return []; }
+    }
+    function saveTestimonials(t){ localStorage.setItem(KEYS.TESTIMONIALS, JSON.stringify(t)); }
+
+    // ---------- Smart search helper ----------
+    function matchesSmartSearch(ev, q){
+      if(!q) return true;
+      q = q.toLowerCase();
+      if((ev.title||'').toLowerCase().includes(q)) return true;
+      if((ev.location||'').toLowerCase().includes(q)) return true;
+      if((ev.desc||'').toLowerCase().includes(q)) return true;
+      if((ev.date||'').toLowerCase().includes(q)) return true;
+
+      if(ev.date){
+        const d = new Date(ev.date);
+        if(!isNaN(d)){
+          const monthNames = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+          const dStrs = [
+            d.toISOString().split("T")[0],                            // YYYY-MM-DD
+            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`, // YYYY-MM
+            `${monthNames[d.getMonth()]} ${d.getFullYear()}`,         // Aug 2025
+            `${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`, // MM-DD
+          ].map(s => s.toLowerCase());
+          if(dStrs.some(s => s.includes(q))) return true;
+        }
+      }
+      return false;
+    }
+
+    // ---------- Public events rendering (tabs + smart search) ----------
+    let currentFilter = "all";
+    let searchQuery = "";
+
+    function renderPublicEvents(filter = currentFilter){
+      currentFilter = filter;
+      const eventList = document.getElementById('eventList');
+      const noEvents = document.getElementById('noEvents');
+      eventList.innerHTML = '';
+
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const events = loadEvents().sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+
+      let filtered = events.slice();
+
+      if(filter === 'upcoming'){
+        filtered = filtered.filter(ev => ev.date && ev.date >= today);
+      } else if(filter === 'past'){
+        filtered = filtered.filter(ev => ev.date && ev.date < today);
+      }
+
+      if(searchQuery && searchQuery.trim() !== ''){
+        filtered = filtered.filter(ev => matchesSmartSearch(ev, searchQuery));
+      }
+
+      if(!filtered.length){
+        noEvents.style.display = 'block';
+        return;
+      } else {
+        noEvents.style.display = 'none';
+      }
+
+      for(const ev of filtered){
+        const card = document.createElement('div');
+        card.className = 'card event-card';
+        const imgHtml = ev.poster
+          ? `<img class="event-poster" src="${ev.poster}" alt="${ev.title||'Poster'}">`
+          : `<div class="event-poster" style="display:grid;place-items:center;color:#7b8a9a;">No Image</div>`;
+        card.innerHTML = `
+          ${imgHtml}
+          <div>
+            <h3>${ev.title || ''}</h3>
+            <div class="meta">${ev.date || ''}${ev.location ? ' • ' + ev.location : ''}</div>
+            <p style="margin-top:8px;">${ev.desc || ''}</p>
+          </div>`;
+        eventList.appendChild(card);
+      }
+    }
+
+    // ---------- Testimonials slider variables & functions ----------
+    let testimonialSlides = [];
+    let testimonialDots = [];
+    let testimonialCurrent = 0;
+    let testimonialTimer;
+
+    function renderPublicTestimonials(){
+      const container = document.getElementById("testimonialList");
+      const dotsContainer = document.getElementById("testimonialDots");
+      container.innerHTML = "";
+      dotsContainer.innerHTML = "";
+
+      const testimonials = loadTestimonials();
+      if(!testimonials.length){
+        const slide = document.createElement('div');
+        slide.className = 'slide active';
+        slide.innerHTML = `<p>No testimonials yet.</p>`;
+        container.appendChild(slide);
+        testimonialSlides = container.querySelectorAll('.slide');
+        testimonialDots = dotsContainer.querySelectorAll('button');
+        testimonialCurrent = 0;
+        clearInterval(testimonialTimer);
+        return;
+      }
+
+      testimonials.forEach((t,i)=>{
+        const slide = document.createElement('div');
+        slide.className = 'slide' + (i===0 ? ' active' : '');
+        slide.innerHTML = `
+          <p>"${t.message}"</p>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:12px; justify-content:center;">
+            <img src="${t.image}" alt="${t.name}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
+            <h4>- ${t.name}</h4>
+          </div>
+        `;
+        container.appendChild(slide);
+
+        const dot = document.createElement('button');
+        if(i===0) dot.classList.add('active');
+        dot.addEventListener('click', ()=> showTestimonial(i));
+        dotsContainer.appendChild(dot);
+      });
+
+      testimonialSlides = container.querySelectorAll('.slide');
+      testimonialDots = dotsContainer.querySelectorAll('button');
+      testimonialCurrent = 0;
+      resetTestimonialTimer();
+    }
+
+    function showTestimonial(index){
+      if(!testimonialSlides.length) return;
+      testimonialSlides[testimonialCurrent].classList.remove('active');
+      if(testimonialDots[testimonialCurrent]) testimonialDots[testimonialCurrent].classList.remove('active');
+      testimonialCurrent = index;
+      testimonialSlides[testimonialCurrent].classList.add('active');
+      if(testimonialDots[testimonialCurrent]) testimonialDots[testimonialCurrent].classList.add('active');
+      resetTestimonialTimer();
+    }
+
+    function nextTestimonial(){
+      if(!testimonialSlides.length) return;
+      const next = (testimonialCurrent + 1) % testimonialSlides.length;
+      showTestimonial(next);
+    }
+
+    function resetTestimonialTimer(){
+      clearInterval(testimonialTimer);
+      if(testimonialSlides.length > 1){
+        testimonialTimer = setInterval(nextTestimonial, 5000);
+      }
+    }
+
+    // ---------- Contact form handling ----------
+    document.getElementById('contactForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const contact_no = document.getElementById('phone').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const time = new Date().toLocaleString();
+
+      // Save to localStorage (append)
+      try {
+        const subs = JSON.parse(localStorage.getItem(KEYS.SUBS)) || [];
+        subs.push({ name, email, contact_no, message, time });
+        localStorage.setItem(KEYS.SUBS, JSON.stringify(subs));
+      } catch {}
+
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+
+      // EmailJS send
+      const params = { from_name: name, email_id: email, contact_no, message };
+      const p = (window.emailjs && emailjs.send) ? emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, params) : Promise.reject();
+      p.then(()=> flash('successMsg'))
+       .catch(()=> flash('errorMsg'))
+       .finally(()=> { btn.disabled = false; btn.textContent = 'Send Message'; this.reset(); });
+    });
+
+    // ---------- Admin modal open/close & auth ----------
+    const adminModal = document.getElementById('adminModal');
+    const footerTrigger = document.getElementById('footerTrigger');
+    const closeAdminBtn = document.getElementById('closeAdmin');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function openAdmin(){
+      adminModal.style.display = 'flex';
+      const authed = !!localStorage.getItem(KEYS.AUThed);
+      document.getElementById('loginPanel').style.display = authed ? 'none' : 'block';
+      document.getElementById('dashboard').style.display = authed ? 'block' : 'none';
+      logoutBtn.style.display = authed ? 'inline-flex' : 'none';
+      if(authed){
+        renderAdminTable();
+        loadSubmissionsAdmin();
+        renderAdminTestimonials();
+      }
+    }
+    function closeAdmin(){ adminModal.style.display = 'none'; }
+
+    footerTrigger.addEventListener('click', openAdmin);
+    closeAdminBtn.addEventListener('click', closeAdmin);
+    window.addEventListener('click', (e)=> { if(e.target === adminModal) closeAdmin(); });
+
+    // Keyboard shortcut: Ctrl + Alt + B
+    document.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.altKey && (e.key === 'b' || e.key === 'B')){ openAdmin(); }
+      if(e.key === 'Escape') closeAdmin();
+    });
+
+    // ---------- Login / Logout ----------
+    document.getElementById('loginBtn').addEventListener('click', ()=>{
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value;
+      if(u===CONFIG.ADMIN_USER && p===CONFIG.ADMIN_PASS){
+        localStorage.setItem(KEYS.AUThed, '1');
+        document.getElementById('loginError').style.display='none';
+        document.getElementById('loginPanel').style.display='none';
+        document.getElementById('dashboard').style.display='block';
+        logoutBtn.style.display = 'inline-flex';
+        renderAdminTable();
+        loadSubmissionsAdmin();
+        renderAdminTestimonials();
+      } else {
+        const err = document.getElementById('loginError');
+        err.style.display='block';
+        setTimeout(()=> err.style.display='none', 3000);
+      }
+    });
+
+    logoutBtn.addEventListener('click', ()=>{
+      localStorage.removeItem(KEYS.AUThed);
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('loginPanel').style.display='block';
+      logoutBtn.style.display = 'none';
+    });
+
+    // ---------- Admin: Tabs inside modal ----------
+    document.querySelectorAll('#adminModal .tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('#adminModal .tab-btn').forEach(b=> b.classList.remove('active'));
+        document.querySelectorAll('#adminModal .tab-panel').forEach(p=> p.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = document.getElementById(btn.dataset.tab);
+        if(tab) tab.classList.add('active');
+      });
+    });
+
+    // ---------- Poster preview and file helper ----------
+    const posterInput = document.getElementById('evPoster');
+    const posterPreview = document.getElementById('posterPreview');
+    posterInput.addEventListener('change', () => {
+      const file = posterInput.files[0];
+      if(!file) { posterPreview.style.display='none'; posterPreview.src=''; return; }
+      const reader = new FileReader();
+      reader.onload = e => { posterPreview.src = e.target.result; posterPreview.style.display='block'; };
+      reader.readAsDataURL(file);
+    });
+
+    function resetEventForm(){
+      document.getElementById('editingId').value = '';
+      document.getElementById('evTitle').value = '';
+      document.getElementById('evDate').value = '';
+      document.getElementById('evLocation').value = '';
+      document.getElementById('evDesc').value = '';
+      posterInput.value = '';
+      posterPreview.src = ''; posterPreview.style.display='none';
+      document.getElementById('saveEventBtn').textContent = 'Save Event';
+    }
+
+    function fileToDataUrl(file){
+      return new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ---------- Events Admin: Save / Edit / Delete ----------
+    async function saveEvent(){
+      const title = document.getElementById('evTitle').value.trim();
+      const date = document.getElementById('evDate').value;
+      const location = document.getElementById('evLocation').value.trim();
+      const desc = document.getElementById('evDesc').value.trim();
+      const editingId = document.getElementById('editingId').value;
+
+      if(!title || !date || !desc){ alert('Please fill Title, Date and Description'); return; }
+
+      let posterData = null;
+      if(posterInput.files && posterInput.files[0]){
+        try { posterData = await fileToDataUrl(posterInput.files[0]); } catch(e){ posterData = null; }
+      } else if (editingId) {
+        const events = loadEvents();
+        const idx = events.findIndex(e=>e.id===editingId);
+        posterData = idx>-1 ? events[idx].poster : null;
+      }
+
+      const events = loadEvents();
+      if(editingId){
+        const i = events.findIndex(e=> e.id === editingId);
+        if(i>-1){ events[i] = { ...events[i], title, date, location, desc, poster: posterData }; }
+      } else {
+        const id = 'ev_' + Date.now();
+        events.push({ id, title, date, location, desc, poster: posterData });
+      }
+
+      saveEvents(events);
+      renderAdminTable();
+      renderPublicEvents();
+      flash('saveMsg', 1800);
+      resetEventForm();
+    }
+
+    function renderAdminTable(){
+      const tbody = document.getElementById('adminTbody');
+      tbody.innerHTML = '';
+      const events = loadEvents().sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+      if(!events.length){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="6">No events yet</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+      for(const ev of events){
+        const tr = document.createElement('tr');
+        const posterCell = ev.poster
+          ? `<img src="${ev.poster}" alt="${ev.title||'Poster'}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;">`
+          : '<span class="meta">No image</span>';
+        tr.innerHTML = `
+          <td style="width:90px;">${posterCell}</td>
+          <td>${ev.title||''}</td>
+          <td>${ev.date||''}</td>
+          <td>${ev.location||''}</td>
+          <td style="max-width:280px;">${ev.desc||''}</td>
+          <td>
+            <div class="actions">
+              <button class="btn" onclick="startEdit('${ev.id}')">Edit</button>
+              <button class="btn secondary" onclick="deleteEvent('${ev.id}')">Delete</button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // expose startEdit & deleteEvent to global for onclick inline usage
+    window.startEdit = function(id){
+      const events = loadEvents();
+      const ev = events.find(e=> e.id === id);
+      if(!ev) return;
+      document.getElementById('editingId').value = ev.id;
+      document.getElementById('evTitle').value = ev.title || '';
+      document.getElementById('evDate').value = ev.date || '';
+      document.getElementById('evLocation').value = ev.location || '';
+      document.getElementById('evDesc').value = ev.desc || '';
+      if(ev.poster){ posterPreview.src = ev.poster; posterPreview.style.display='block'; } else { posterPreview.style.display='none'; }
+      posterInput.value = '';
+      document.getElementById('saveEventBtn').textContent = 'Update Event';
+      // Switch to Events tab if not active (admin modal)
+      const evTabBtn = document.querySelector('#adminModal .tab-btn[data-tab="tab-events"]');
+      if(evTabBtn) evTabBtn.click();
+      document.querySelector('#adminModal .modal-inner').scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteEvent = function(id){
+      if(!confirm('Delete this event?')) return;
+      let events = loadEvents();
+      events = events.filter(e=> e.id !== id);
+      saveEvents(events);
+      renderAdminTable();
+      renderPublicEvents();
+    };
+
+    function clearAllEvents(){
+      if(!confirm('This will remove ALL events. Continue?')) return;
+      saveEvents([]);
+      renderAdminTable();
+      renderPublicEvents();
+    }
+
+    document.getElementById('saveEventBtn').addEventListener('click', saveEvent);
+    document.getElementById('resetEventBtn').addEventListener('click', resetEventForm);
+    document.getElementById('clearAllEventsBtn').addEventListener('click', clearAllEvents);
+
+    // ---------- Contact Submissions Admin ----------
+    function getSubs(){
+      try { return JSON.parse(localStorage.getItem(KEYS.SUBS)) || []; }
+      catch { return []; }
+    }
+
+    function loadSubmissionsAdmin(){
+      const tbody = document.getElementById('subsTbody');
+      const subs = getSubs();
+      tbody.innerHTML = '';
+      if(!subs.length){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="5">No submissions yet</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+      for(const s of subs){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.name||''}</td><td>${s.email||''}</td><td>${s.contact_no||''}</td><td style="max-width:360px;">${(s.message||'').toString().slice(0,200)}${(s.message||'').length>200?'…':''}</td><td>${s.time||''}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function downloadCSV(){
+      const subs = getSubs();
+      if(!subs.length){ alert('No submissions to download.'); return; }
+      let csv = 'Name,Email,Contact No,Message,Time\n';
+      for(const s of subs){
+        const row = [s.name, s.email, s.contact_no, (s.message||'').replace(/"/g,'""'), s.time]
+          .map(v => '"'+(v||'')+'"').join(',');
+        csv += row + '\n';
+      }
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'contact_submissions.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function clearSubmissions(){
+      if(!confirm('This will delete ALL contact submissions. Continue?')) return;
+      localStorage.removeItem(KEYS.SUBS);
+      loadSubmissionsAdmin();
+    }
+
+    document.getElementById('downloadCsvBtn').addEventListener('click', downloadCSV);
+    document.getElementById('clearSubsBtn').addEventListener('click', clearSubmissions);
+
+    // ---------- Testimonials Admin (add/delete with file upload) ----------
+    document.getElementById('testimonialForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('tName').value.trim();
+      const message = document.getElementById('tMessage').value.trim();
+      const fileInput = document.getElementById('tImageFile');
+
+      if(!name || !message) return;
+
+      if(fileInput.files && fileInput.files[0]){
+        const reader = new FileReader();
+        reader.onload = function(evt){
+          saveNewTestimonial(name, message, evt.target.result);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        // placeholder image
+        saveNewTestimonial(name, message, "https://via.placeholder.com/80");
+      }
+
+      e.target.reset();
+    });
+
+    function saveNewTestimonial(name, message, image){
+      const ts = loadTestimonials();
+      ts.push({ name, message, image });
+      saveTestimonials(ts);
+      renderAdminTestimonials();
+      renderPublicTestimonials();
+    }
+
+    function renderAdminTestimonials(){
+      const list = document.getElementById('testimonialAdminList');
+      list.innerHTML = '';
+      const ts = loadTestimonials();
+      if(!ts.length){
+        list.innerHTML = '<li style="padding:12px;color:#6b7c93;">No testimonials yet</li>';
+        return;
+      }
+      ts.forEach((t,i)=>{
+        const li = document.createElement('li');
+        li.style.padding = '12px';
+        li.style.display = 'flex';
+        li.style.alignItems = 'center';
+        li.style.justifyContent = 'space-between';
+        li.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${t.image}" alt="${t.name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+            <div>
+              <strong>${t.name}</strong>
+              <div style="color:#556; max-width:520px;">${t.message}</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn secondary" onclick="deleteTestimonial(${i})">Delete</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    window.deleteTestimonial = function(index){
+      if(!confirm('Delete this testimonial?')) return;
+      const ts = loadTestimonials();
+      ts.splice(index,1);
+      saveTestimonials(ts);
+      renderAdminTestimonials();
+      renderPublicTestimonials();
+    };
+
+    // ---------- On load: tabs, search, auth state, initial renders ----------
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // show/hide logout if authed
+      const authed = !!localStorage.getItem(KEYS.AUThed);
+      if(authed){ logoutBtn.style.display='inline-flex'; }
+
+      // Public event tabs (scoped)
+      const tabButtons = document.querySelectorAll('.event-tab-btn');
+      tabButtons.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabButtons.forEach(b=> b.classList.remove('active'));
+          btn.classList.add('active');
+          const t = btn.dataset.tab;
+          renderPublicEvents(t);
+        });
+      });
+
+      // Search input
+      document.getElementById('eventSearch').addEventListener('input', (e)=>{
+        searchQuery = e.target.value;
+        renderPublicEvents(currentFilter);
+      });
+
+      // Render initial content
+      renderPublicEvents('all');
+      renderPublicTestimonials();
+
+      // If admin already authed, render admin lists too
+      if(authed){
+        renderAdminTable();
+        loadSubmissionsAdmin();
+        renderAdminTestimonials();
+      }
+    });
+  </script>
+</body>
+</html>

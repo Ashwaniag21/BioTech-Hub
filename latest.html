@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BioTech Hub</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/7237/7237724.png" type="image/x-icon" />
+
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- EmailJS (contact + registration forms) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f8fa; color: #2c3e50; }
+
+    /* Header / Nav */
+    header { position: sticky; top: 0; z-index: 1000; background: #2c3e50; color: #fff; }
+    .nav-wrap { max-width: 1200px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-weight: 800; letter-spacing: .5px; }
+    nav ul { display: flex; gap: 22px; list-style: none; }
+    nav a { color: #ecf0f1; text-decoration: none; font-weight: 600; }
+    nav a:hover { color: #1abc9c; }
+
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; }
+    .hamburger span { width: 26px; height: 3px; background: #ecf0f1; border-radius: 2px; }
+    
+    /* Bug Fix: Mobile menu with proper overflow handling */
+    .mobile-menu {
+      position: fixed;
+      top: 55px; /* Adjust based on header height */
+      right: -100vw;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      background: #34495e;
+      transition: transform 0.3s ease-in-out;
+      z-index: 999;
+    }
+    .mobile-menu.active {
+      transform: translateX(-100vw);
+    }
+    .mobile-menu a { padding: 12px 18px; color: #ecf0f1; border-top: 1px solid rgba(255,255,255,.08); text-decoration: none; }
+    .mobile-menu a:hover { background: rgba(255,255,255,.06); }
+
+    /* Sections */
+    section { padding: 70px 18px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* Hero */
+    .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.5)); }
+    .hero-inner { position: relative; z-index: 1; padding: 18px; }
+    .hero h1 { font-size: clamp(28px, 4vw, 48px); margin-bottom: 12px; }
+    .hero p { font-size: clamp(14px, 1.6vw, 18px); max-width: 760px; margin: 0 auto; opacity: .95; }
+
+    /* Cards & grids */
+    .grid { display: grid; gap: 20px; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr; } }
+    .card { background: #fff; border: 1px solid #e6ecf1; border-radius: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.04); padding: 18px; }
+    .card h3 { margin-bottom: 6px; color: #1f7a8c; }
+    .meta { font-size: 13px; color: #6b7c93; }
+
+    /* Events public cards */
+    .event-card { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start; }
+    .event-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #eef3f7; }
+    @media (max-width: 560px) { .event-card { grid-template-columns: 1fr; } .event-poster { height: 180px; } }
+
+    /* Search + Tabs */
+    .event-search { width:100%; padding:12px; border:1px solid #d9e2ec; border-radius:10px; margin-bottom:14px; font-size:14px; }
+    .event-tabs { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+    .event-tab-btn { padding:8px 14px; border:1px solid #dbe4ef; background:#f7fafc; border-radius:8px; cursor:pointer; font-weight:600; }
+    .event-tab-btn.active { background:#34495e; color:#fff; border-color:#34495e; }
+
+    /* Testimonials */
+    #testimonials { padding: 60px 20px; background: #eef3f7; text-align: center; }
+    .testimonial-card{flex:0 0 280px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.05);scroll-snap-align:start;}
+    .testimonial-slider { max-width: 700px; margin: 30px auto; position: relative; }
+    .slides { position: relative; overflow: hidden; min-height: 160px; }
+    .slide { display: none; opacity: 0; transition: opacity 0.6s ease; padding: 20px; }
+    .slide.active { display: block; opacity: 1; }
+    .slide p { font-size: 1.05rem; font-style: italic; margin-bottom: 12px; color: #333; }
+    .slide h4 { color: #555; font-weight: 600; margin-top:10px; }
+    .dotsT { margin-top: 15px; }
+    .dotsT button { height: 12px; width: 12px; margin: 0 5px; border-radius: 50%; border: none; background: #ccc; cursor: pointer; transition: background 0.3s; }
+    .dotsT button.active { background: #34495e; }
+
+    /* Contact + Registration */
+    #register{background: #f9fafb;}
+    .contact { display: grid; place-items: center; }
+    .contact-box { width: 100%; max-width: 520px; }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    input, textarea, select { width: 100%; padding: 12px; border: 1px solid #d9e2ec; border-radius: 10px; font-size: 14px; }
+    textarea { resize: vertical; min-height: 120px; }
+    .btn { background: #1abc9c; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .btn.secondary { background: #8898aa; }
+    
+    /* Blinking effect for registration button for non-logged-in users */
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    .btn.blinking {
+        animation: blink 1.5s infinite;
+    }
+
+    .alert { display: none; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; text-align: center; }
+    .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* Admin area (inside modal) */
+    .admin-wrap { display: grid; gap: 20px; grid-template-columns: 1fr; }
+    .admin-card { padding: 18px; }
+    .poster-preview { width: 100%; max-height: 200px; object-fit: contain; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 8px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid #e6ecf1; text-align: left; vertical-align: top; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    footer { background: #2c3e50; color: #ecf0f1; padding: 24px 18px; text-align: center; margin-top: 30px; cursor: pointer; }
+
+    /* Responsive nav */
+    @media (max-width: 820px) {
+      nav ul { display: none; }
+      .hamburger { display: flex; }
+      body.mobile-menu-active { overflow-x: hidden; }
+    }
+
+    /* Modal (hidden admin) */
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2000; align-items:center; justify-content:center; }
+    .modal-inner { width: min(1000px, 94vw); max-height: 90vh; overflow:auto; background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eef2f7; position:sticky; top:0; background:#fff; z-index:5; }
+    .modal-body { padding: 16px; }
+    .close-x { border:none; background:transparent; font-size:22px; cursor:pointer; }
+
+    /* Admin Tabs */
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab-btn { padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; background:#f7fafc; border:1px solid #dbe4ef; }
+    .tab-btn.active { background:#34495e; color:#fff; border-color:#34495e; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* Hero styles */
+    .hero {
+      position: relative;
+      height: 95vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 1s ease-in-out;
+      overflow: hidden;
+    }
+    .hero-inner {
+      z-index: 2;
+      position: relative;
+      max-width: 800px;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 1;
+    }
+    .dots {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 3;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: white;
+      opacity: 0.5;
+      cursor: pointer;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .dot.active {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    /* About section styles */
+    .about-section {
+      padding: 80px 16px;
+      background: #f9fafb;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: #1f2937;
+    }
+    .about-container {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+    .about-title {
+      text-align: center;
+      font-size: 34px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #111827;
+    }
+    .about-sub {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 50px;
+      font-size: 17px;
+    }
+    .about-cards {
+      display: grid;
+      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .about-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s ease;
+    }
+    .about-card.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .about-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+    .about-card .media {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      transition: opacity 0.6s ease;
+    }
+    .about-card .media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .about-card:hover .media {
+      opacity: 0;
+    }
+    .about-card:hover .media img {
+      transform: scale(1.1);
+    }
+    .about-card .content {
+      padding: 24px;
+      text-align: left;
+      transition: all 0.6s ease, opacity 0.6s ease;
+      position: relative;
+      z-index: 2;
+      opacity: 1;
+    }
+    .about-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+    .about-card p {
+      margin: 0;
+      color: #374151;
+      line-height: 1.6;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .about-card:hover .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 80%;
+      opacity: 0;
+      animation: fadeIn 0.6s forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -40%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+    @media (max-width: 560px) {
+      .about-title { font-size: 26px; }
+      .about-sub { font-size: 15px; }
+      .about-card .media { height: 170px; }
+    }
+    /* Registration styles */
+    .register-wrapper {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      max-width: 1100px;
+      margin: auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      animation: fadeIn 1s ease-in-out;
+      background: #f9fafb;
+    }
+    .register-image {
+      flex: 1;
+      overflow: hidden;
+    }
+    .register-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .register-image:hover img {
+      transform: scale(1.05);
+    }
+    .form-overlay {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      padding: 30px;
+      border-radius: 0 16px 16px 0;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      animation: slideIn 1s ease forwards;
+      transform: translateX(40px);
+      opacity: 0;
+    }
+    .field-group {
+      display: flex;
+      gap: 15px;
+    }
+    .field-group .field {
+      flex: 1;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 4px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #4682B4;
+      box-shadow: 0 0 6px rgba(70,130,180,0.3);
+      outline: none;
+    }
+    .btn:hover {
+      background: linear-gradient(135deg, #1e40af, #162f6a);
+      transform: translateY(-2px);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @media (max-width: 768px) {
+      .register-wrapper { flex-direction: column; }
+      .register-image { height: 220px; }
+      .register-image img { height: 100%; object-fit: cover; }
+      .form-overlay { padding: 20px; border-radius: 0 0 16px 16px; }
+      .field-group { flex-direction: column; }
+    }
+    /* Scroll to top button styles */
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #scrollTopBtn.show {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #scrollTopBtn:hover {
+      background: rgba(0, 0, 0, 0.6);
+      transform: translateY(-3px);
+    }
+    .dash-card { transition:.25s transform,.25s box-shadow,.25s background,.25s color; border-radius:12px; padding:14px; }
+    .dash-card:hover { transform: translateY(-6px); box-shadow:0 12px 30px rgba(0,0,0,.12); }
+    .dash-card p { margin:0; }
+    @media (max-width:520px){ .dashboard-cards { grid-template-columns: 1fr !important; } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="nav-wrap">
+      <div class="logo">BioTech Hub</div>
+      <nav>
+        <ul id="desktopNav">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#events">Events</a></li>
+          <li><a href="#register" id="registerNav">Register</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li id="historyLink" style="display:none;"><a href="#" id="historyBtn">History</a></li>
+          <li id="notificationLink" style="display:none;"><a href="#" id="notificationBtn" style="position:relative; font-size: 1.2rem;"><i class="fas fa-bell"></i><span id="notificationBadge" style="position:absolute;top:-5px;right:-10px;background:#ef4444;color:white;border-radius:999px;padding:2px 6px;font-size:12px;font-weight:bold;display:none;">0</span></a></li>
+          <li id="loginLink"><a href="#">Login</a></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#events">Events</a>
+      <a href="#register" id="mobileRegisterLink">Register</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#contact">Contact</a>
+      <a href="#" id="mobileHistoryBtn" style="display:none;">History</a>
+      <a href="#" id="mobileNotificationBtn" style="display:none;"><i class="fas fa-bell"></i><span id="mobileNotificationBadge" style="background:#ef4444;color:white;border-radius:999px;padding:2px 6px;font-size:12px;font-weight:bold;margin-left:8px;display:none;">0</span></a>
+      <a href="#" id="mobileLoginLink">Login</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+ <section id="home" class="hero">
+  <div class="hero-inner container">
+    <h1>Innovating the Future of Biotechnology</h1>
+    <p>
+      Discover global biotech events, collaborate with researchers, and explore
+      cutting-edge projects in genomics, bioinformatics, and sustainable biotech.
+    </p>
+  </div>
+  <div class="dots"></div>
+</section>
+
+<script>
+  const images = [
+    "https://plus.unsplash.com/premium_photo-1681487546184-98bd8bacc20a?w=1600&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1581594549595-35f6edc7b762?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "https://plus.unsplash.com/premium_photo-1661371573606-5abfcbf88e91?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+  ];
+  let currentIndex = 0;
+  const hero = document.querySelector(".hero");
+  const dotsContainer = document.querySelector(".dots");
+
+  images.forEach((_, i) => {
+    const dot = document.createElement("div");
+    dot.classList.add("dot");
+    if (i === 0) dot.classList.add("active");
+    dot.addEventListener("click", () => {
+      showSlide(i);
+      resetInterval();
+    });
+    dotsContainer.appendChild(dot);
+  });
+  const dots = document.querySelectorAll(".dot");
+
+  function showSlide(index) {
+    currentIndex = index;
+    hero.style.backgroundImage = `url('${images[currentIndex]}')`;
+    dots.forEach(dot => dot.classList.remove("active"));
+    dots[currentIndex].classList.add("active");
+  }
+
+  function nextSlide() {
+    currentIndex = (currentIndex + 1) % images.length;
+    showSlide(currentIndex);
+  }
+
+  let slideInterval = setInterval(nextSlide, 3500);
+
+  function resetInterval() {
+    clearInterval(slideInterval);
+    slideInterval = setInterval(nextSlide, 3500);
+  }
+
+  showSlide(currentIndex);
+</script>
+
+
+  <!-- About -->
+<section id="about" class="about-section">
+  <div class="about-container">
+    <h2 class="about-title">About Us</h2>
+    <p class="about-sub">We connect science, industry, and community with innovation and impact.</p>
+
+    <div class="about-cards">
+      <!-- Vision -->
+      <article class="about-card">
+        <div class="media">
+          <img src="https://plus.unsplash.com/premium_photo-1705010671514-f0dcb9676ddc?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+        <div class="content">
+          <h3>Our Vision</h3>
+          <p>Advance human health and sustainability through collaboration and scientific excellence.</p>
+        </div>
+      </article>
+
+      <!-- What We Do -->
+      <article class="about-card">
+        <div class="media">
+          <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80" alt="Conference session">
+        </div>
+        <div class="content">
+          <h3>What We Do</h3>
+          <p>Conferences, publications, and industry partnerships that move ideas into practice.</p>
+        </div>
+      </article>
+
+      <!-- Focus Areas -->
+      <article class="about-card">
+        <div class="media">
+          <img src="https://plus.unsplash.com/premium_photo-1674081975809-ec3b522cf2be?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+        </div>
+        <div class="content">
+          <h3>Focus Areas</h3>
+          <p>Genomics, drug discovery, AI for biology, and green biotechnology driving global impact.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+  <script>
+    // Animate cards when in view
+    (function () {
+      const cards = document.querySelectorAll('#about .about-card');
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) {
+            cards.forEach(card => card.classList.add('in-view'));
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.2 });
+      cards.forEach(c => io.observe(c));
+    })();
+  </script>
+</section>
+
+
+  <!-- Events (Public) -->
+  <section id="events">
+    <div class="container">
+      <h2>Events</h2>
+      <p class="meta" style="margin:6px 0 16px">Managed by Admin • Auto-updates</p>
+      <!-- Search -->
+      <input id="eventSearch" class="event-search" type="text" placeholder="Search events by name, date, or location..." />
+      <!-- Tabs -->
+      <div id="eventTabs" class="event-tabs">
+        <button class="event-tab-btn active" data-tab="all">All</button>
+        <button class="event-tab-btn" data-tab="upcoming">Upcoming</button>
+        <button class="event-tab-btn" data-tab="past">Past</button>
+      </div>
+      <!-- Event list -->
+      <div id="eventList" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));"></div>
+      <div id="noEvents" class="card" style="display:none; text-align:center;">No events found.</div>
+    </div>
+  </section>
+
+  <!-- NEW: Registration -->
+<section id="register" class="contact">
+  <div class="container register-wrapper">
+    <!-- Left side image -->
+    <div class="register-image">
+      <img src="https://dynamic.brandcrowd.com/template/preview/design/7111945b-5b8d-4dbc-b46f-6b7cafbbaaf3/3ece9414-52e5-4bcc-9cc9-0bda7da6db60?v=4&designTemplateVersion=1&logoTemplateVersion=4&size=design-preview-standalone-1x" alt="Program" />
+    </div>
+    <!-- Right side form overlay -->
+    <div class="contact-box card form-overlay">
+      <h2 style="text-align:center; margin-bottom: 15px;">Program Registration</h2>
+      <div id="regSuccess" class="alert success">✅ Registration submitted successfully!</div>
+      <div id="regError" class="alert error">❌ Failed to submit registration. Please try again.</div>
+      <form id="registrationForm">
+        <div class="field">
+          <label for="regFullName">Full Name</label>
+          <input id="regFullName" name="name" type="text" placeholder="Your full name" required />
+        </div>
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" name="email" type="email" placeholder="you@email.com" required />
+        </div>
+        <div class="field">
+          <label for="regMobile">Mobile No.</label>
+          <input id="regMobile" name="mobile" type="text" placeholder="Mobile number" required />
+        </div>
+        <div class="field">
+          <label for="regWhatsApp">WhatsApp No.</label>
+          <input id="regWhatsApp" name="whatsapp" type="text" placeholder="WhatsApp number" required />
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label for="regGender">Gender</label>
+            <select id="regGender" name="gender" required>
+              <option value="">-- Select --</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="regDob">Date of Birth</label>
+            <input id="regDob" name="dob" type="date" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="regStatus">Current Status</label>
+          <select id="regStatus" name="status" required>
+            <option value="">-- Select --</option>
+            <option>UG Student</option>
+            <option>PG Student</option>
+            <option>Research Scholar</option>
+            <option>Faculty</option>
+            <option>Industry Professional</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="regProgram">Select Program</label>
+          <select id="regProgram" name="program" required>
+            <option value="">-- Select --</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="regRefNo">Payment Receipt Reference No.</label>
+          <input id="regRefNo" name="refNo" type="text" placeholder="Reference number" required />
+        </div>
+        <input type="hidden" id="regTimeHidden" name="time" />
+        <button id="regSubmitBtn" class="btn" type="submit">Submit Registration</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <h2>What People Say</h2>
+      <div class="testimonial-slider">
+        <div class="slides" id="testimonialList"></div>
+        <div class="dotsT" id="testimonialDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="contact">
+    <div class="container contact-box card">
+      <h2 style="text-align:center; margin-bottom: 10px;">Contact Us</h2>
+      <div id="successMsg" class="alert success">✅ Your message has been sent successfully!</div>
+      <div id="errorMsg" class="alert error">❌ Failed to send message. Please try again.</div>
+      <form id="contactForm">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="from_name" type="text" placeholder="Your Name" required />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email_id" type="email" placeholder="your@email.com" required />
+        </div>
+        <div class="field">
+          <label for="phone">Contact No</label>
+          <input id="phone" name="contact_no" type="text" placeholder="Your phone number" required />
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Write your message..." required></textarea>
+        </div>
+        <button id="sendBtn" class="btn" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+<!-- Scroll to Top Button -->
+<button id="scrollTopBtn" aria-label="Scroll to top">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" width="20" height="20">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+  </svg>
+</button>
+
+<script>
+const scrollTopBtn = document.getElementById("scrollTopBtn");
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 200) {
+    scrollTopBtn.classList.add("show");
+  } else {
+    scrollTopBtn.classList.remove("show");
+  }
+});
+scrollTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+
+<!-- Login/Sign-up Modal -->
+<div class="modal" id="loginModal" aria-hidden="true">
+  <div class="modal-inner card" role="dialog" aria-modal="true" aria-labelledby="loginTitle" style="max-width:520px;">
+    <div class="modal-header">
+      <strong id="loginTitle">Login / Sign-Up</strong>
+      <button class="close-x" id="closeLogin" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="userAuthPanel">
+        <div class="field">
+          <label for="userEmail">Email</label>
+          <input id="userEmail" type="email" placeholder="your@email.com" required />
+        </div>
+        <div class="field">
+          <label for="userPassword">Password</label>
+          <input id="userPassword" type="password" placeholder="••••••" required />
+        </div>
+        <div id="userAuthError" class="alert error" style="margin-top:10px; display:none;"></div>
+        <div class="actions">
+          <button class="btn" id="userLoginBtn">Login</button>
+          <button class="btn secondary" id="userSignupBtn">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Modal -->
+<div class="modal" id="notificationModal" aria-hidden="true">
+  <div class="modal-inner card" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" style="max-width:600px;">
+    <div class="modal-header">
+      <strong id="notificationTitle">Notifications</strong>
+      <button class="close-x" id="closeNotification" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <ul id="notificationList" style="list-style:none; padding:0; margin:0;">
+        <!-- Notifications will be rendered here -->
+      </ul>
+      <div id="noNotifications" style="text-align:center; padding:20px; color:#6b7c93; display:none;">No new notifications.</div>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal" id="historyModal" aria-hidden="true">
+  <div class="modal-inner card" role="dialog" aria-modal="true" aria-labelledby="historyTitle" style="max-width:800px;">
+    <div class="modal-header">
+      <strong id="historyTitle">My Registrations</strong>
+      <button class="close-x" id="closeHistory" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="overflow-x:auto;">
+      <table class="admin-table" id="historyTable">
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Status</th>
+            <th>Ref No</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody">
+          <!-- History data will be rendered here -->
+        </tbody>
+      </table>
+      <div id="noHistory" style="text-align:center; padding:20px; color:#6b7c93; display:none;">You have not registered for any programs yet.</div>
+    </div>
+  </div>
+</div>
+
+
+  <footer id="footerTrigger" title="Click to open Admin (or press Ctrl+Alt+B)">
+    © 2025 BioTech Hub — Research • Events • Collaboration
+  </footer>
+
+  <!-- Hidden Admin Modal (Login + Dashboard) -->
+  <div class="modal" id="adminModal" aria-hidden="true">
+  <div class="modal-inner" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div class="modal-header">
+      <strong id="adminTitle">Admin</strong>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn secondary" id="adminLogoutBtn" style="display:none; padding:8px 12px;">Logout</button>
+        <button class="close-x" id="closeAdmin" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <!-- Login -->
+      <div id="loginPanel" class="card admin-card" style="max-width:520px; margin:0 auto;">
+        <h2 style="margin-bottom:10px;">Admin Login</h2>
+        <div id="adminLoginError" class="alert error" style="margin-top:10px; display:none;"></div>
+        <div class="field"><label for="adminUser">Username</label><input id="adminUser" type="text" placeholder="admin" /></div>
+        <div class="field"><label for="adminPass">Password</label><input id="adminPass" type="password" placeholder="••••••" /></div>
+        <div class="actions"><button class="btn" id="loginBtn">Login</button></div>
+        <div id="loginError" class="alert error" style="margin-top:10px; display:none;">Invalid credentials</div>
+      </div>
+
+      <!-- Dashboard + Admin area -->
+      <div id="dashboard" style="display:none;" class="admin-wrap">
+        <div class="card admin-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <h2 style="margin:0;">Dashboard</h2>
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="tab-dashboard">Overview</button>
+              <button class="tab-btn" data-tab="tab-events">Events</button>
+              <button class="tab-btn" data-tab="tab-registrations">Program Registrations</button>
+              <button class="tab-btn" data-tab="tab-contacts">Contact Submissions</button>
+              <button class="tab-btn" data-tab="tab-testimonials">Testimonials</button>
+              <button class="tab-btn" data-tab="tab-users">Users Master</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD PANEL -->
+        <div id="tab-dashboard" class="tab-panel active">
+          <div class="card admin-card">
+            <h3 style="margin-bottom:10px;">Overview</h3>
+            <div class="dashboard-cards" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
+              <div class="dash-card" style="text-align:center;" data-goto="tab-dashboard">
+                <p style="margin:0;opacity:.8;">Site Visits</p>
+                <p id="dashVisitCount" style="margin:8px 0 0; font-weight:800; font-size:28px;">0</p>
+              </div>
+
+              <div class="dash-card" style="text-align:center;" data-goto="tab-registrations">
+                <p style="margin:0;opacity:.8;">Registrations</p>
+                <p id="dashRegCount" style="margin:8px 0 0; font-weight:800; font-size:28px;">0</p>
+              </div>
+
+              <div class="dash-card" style="text-align:center;" data-goto="tab-contacts">
+                <p style="margin:0;opacity:.8;">Contacted Users</p>
+                <p id="dashContactCount" style="margin:8px 0 0; font-weight:800; font-size:28px;">0</p>
+              </div>
+              <div class="dash-card" style="text-align:center;" data-goto="tab-users">
+                <p style="margin:0;opacity:.8;">Registered Users</p>
+                <p id="dashUsersCount" style="margin:8px 0 0; font-weight:800; font-size:28px;">0</p>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+              <div id="dashLastUpdated" style="font-style:italic; color:#666;">Last Updated: --</div>
+              <div>
+                <button class="btn secondary" id="resetDashboardBtn">Reset Counts</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTS TAB -->
+        <div id="tab-events" class="tab-panel">
+          <div class="card admin-card">
+            <h3 style="margin-bottom:8px;">Add / Edit Event</h3>
+            <input type="hidden" id="editingId" />
+            <div class="field"><label for="evTitle">Title</label><input id="evTitle" type="text" placeholder="e.g., International Biotech Summit" /></div>
+            <div class="field"><label for="evDate">Date</label><input id="evDate" type="date" /></div>
+            <div class="field"><label for="evLocation">Location</label><input id="evLocation" type="text" placeholder="City, Country" /></div>
+            <div class="field"><label for="evDesc">Description</label><textarea id="evDesc" rows="4" placeholder="Short description"></textarea></div>
+            <div class="field">
+              <label for="evPoster">Poster / Cover (JPEG/PNG)</label>
+              <input id="evPoster" type="file" accept="image/*" />
+              <img id="posterPreview" class="poster-preview" alt="Poster preview" style="display:none;" />
+            </div>
+            <div class="actions">
+              <button class="btn" id="saveEventBtn">Save Event</button>
+              <button class="btn secondary" id="resetEventBtn" type="button">Reset</button>
+            </div>
+            <div id="saveMsg" class="alert success" style="margin-top:10px; display:none;">Event saved!</div>
+          </div>
+          <div class="card admin-card" style="overflow-x:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h3 style="margin-bottom:8px;">Manage Events</h3>
+              <div class="actions">
+                <button class="btn secondary" id="clearAllEventsBtn">Clear All</button>
+              </div>
+            </div>
+            <table class="admin-table" id="adminTable">
+              <thead>
+                <tr><th>Poster</th><th>Title</th><th>Date</th><th>Location</th><th>Description</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="adminTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PROGRAM REGISTRATIONS TAB -->
+        <div id="tab-registrations" class="tab-panel">
+          <div class="card admin-card" style="overflow-x:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h3 style="margin-bottom:8px;">Program Registrations</h3>
+              <div class="actions">
+                <button class="btn" id="downloadRegsCsvBtn">Download CSV</button>
+                <button class="btn secondary" id="clearRegsBtn">Clear All</button>
+              </div>
+            </div>
+            <table class="admin-table" id="regsTable">
+              <thead>
+                <tr>
+                  <th>Full Name</th><th>Email</th><th>Mobile</th><th>WhatsApp</th>
+                  <th>Gender</th><th>DOB</th><th>Status</th><th>Program</th>
+                  <th>Receipt Ref</th><th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="regsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CONTACTS TAB -->
+        <div id="tab-contacts" class="tab-panel">
+          <div class="card admin-card" style="overflow-x:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h3 style="margin-bottom:8px;">Contact Submissions</h3>
+              <div class="actions">
+                <button class="btn" id="downloadCsvBtn">Download CSV</button>
+                <button class="btn secondary" id="clearSubsBtn">Clear All</button>
+              </div>
+            </div>
+            <table class="admin-table" id="subsTable">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Contact No</th><th>Message</th><th>Time</th></tr>
+              </thead>
+              <tbody id="subsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TESTIMONIALS TAB -->
+        <div id="tab-testimonials" class="tab-panel">
+          <div class="card admin-card">
+            <h3 style="margin-bottom:8px;">Add Testimonial</h3>
+            <form id="testimonialForm">
+              <div class="field"><label for="tName">Name</label><input id="tName" type="text" placeholder="Reviewer name" required /></div>
+              <div class="field"><label for="tMessage">Message</label><textarea id="tMessage" rows="3" placeholder="Testimonial message" required></textarea></div>
+              <div class="field"><label for="tImageFile">Image (optional)</label><input id="tImageFile" type="file" accept="image/*" /></div>
+              <div class="actions"><button class="btn" type="submit">Add Testimonial</button></div>
+            </form>
+          </div>
+          <div class="card admin-card" style="overflow-x:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h3 style="margin-bottom:8px;">Manage Testimonials</h3>
+            </div>
+            <ul id="testimonialAdminList" style="list-style:none; padding:0; margin:0;"></ul>
+          </div>
+        </div>
+
+        <!-- USERS MASTER TAB -->
+        <div id="tab-users" class="tab-panel">
+          <div class="card admin-card" style="overflow-x:auto;">
+            <h3 style="margin-bottom:8px;">Registered Users</h3>
+            <div class="actions">
+              <button class="btn" id="downloadUsersCsvBtn">Download CSV</button>
+            </div>
+            <table class="admin-table" id="usersTable">
+              <thead>
+                <tr><th>User ID</th><th>Email</th><th>Sign-up Date</th></tr>
+              </thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- CONFIG ----------
+  const CONFIG = {
+    EMAILJS_PUBLIC_KEY: '75870YUDiUwmzJHyx',
+    EMAILJS_SERVICE_ID: 'service_3swi2wp',
+    EMAILJS_TEMPLATE_ID: 'template_95lhklo',
+    EMAILJS_REG_TEMPLATE_ID: 'template_bxpsq6l',
+    ADMIN_USER: 'admin',
+    ADMIN_PASS: 'biotech123'
+  };
+
+  // ---------- Storage Keys ----------
+  const KEYS = {
+    EVENTS: 'biotech_events_v1',
+    AUThed: 'biotech_admin_authed',
+    SUBS: 'biotech_contact_submissions_v1',
+    TESTIMONIALS: 'biotech_testimonials_v1',
+    REGS: 'biotech_program_registrations_v1',
+    VISITS: 'biotech_site_visits_v1',
+    USERS: 'biotech_users_v1',
+    LOGGED_IN_USER: 'biotech_logged_in_user',
+    USER_NOTIFICATIONS: 'biotech_user_notifications'
+  };
+
+  // ---------- Helper: alerts ----------
+  function flash(id, ms = 3500) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', ms);
+  }
+
+  // ---------- EmailJS init ----------
+  (function() {
+    try { if (window.emailjs) emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY); } catch (e) {}
+  })();
+
+  // ---------- Mobile nav toggle fix ----------
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', () => {
+      const isActive = mobileMenu.classList.toggle('active');
+      document.body.classList.toggle('mobile-menu-active', isActive);
+    });
+    
+    // Fix: Hide menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        document.body.classList.remove('mobile-menu-active');
+      });
+    });
+  }
+
+  // ---------- Storage helpers ----------
+  function loadFromStorage(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveToStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  function getSiteVisits() {
+    try {
+      return parseInt(localStorage.getItem(KEYS.VISITS) || '0', 10);
+    } catch {
+      return 0;
+    }
+  }
+
+  function incrementSiteVisits() {
+    try {
+      localStorage.setItem(KEYS.VISITS, String(getSiteVisits() + 1));
+    } catch {}
+  }
+
+  // ---------- Smart search helper ----------
+  function matchesSmartSearch(ev, q) {
+    if (!q) return true;
+    q = q.toLowerCase();
+    return (ev.title || '').toLowerCase().includes(q) ||
+      (ev.location || '').toLowerCase().includes(q) ||
+      (ev.desc || '').toLowerCase().includes(q) ||
+      (ev.date || '').toLowerCase().includes(q);
+  }
+
+  // ---------- Public events rendering (tabs + smart search) ----------
+  let currentFilter = "all";
+  let searchQuery = "";
+
+  function renderPublicEvents() {
+    const eventList = document.getElementById('eventList');
+    const noEvents = document.getElementById('noEvents');
+    if (!eventList) return;
+    eventList.innerHTML = '';
+
+    const today = new Date().toISOString().split('T')[0];
+    let events = loadFromStorage(KEYS.EVENTS).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    if (currentFilter === 'upcoming') events = events.filter(ev => ev.date && ev.date >= today);
+    else if (currentFilter === 'past') events = events.filter(ev => ev.date && ev.date < today);
+
+    if (searchQuery.trim() !== '') events = events.filter(ev => matchesSmartSearch(ev, searchQuery));
+
+    if (!events.length) {
+      if (noEvents) noEvents.style.display = 'block';
+      return;
+    } else {
+      if (noEvents) noEvents.style.display = 'none';
+    }
+
+    events.forEach(ev => {
+      const card = document.createElement('div');
+      card.className = 'card event-card';
+      // Added data attribute for event highlighting on notification click
+      card.setAttribute('data-event-id', ev.id); 
+      const imgHtml = ev.poster ? `<img class="event-poster" src="${ev.poster}" alt="${ev.title||'Poster'}">` : `<div class="event-poster" style="display:grid;place-items:center;color:#7b8a9a;">No Image</div>`;
+      card.innerHTML = `${imgHtml}<div><h3>${ev.title || ''}</h3><div class="meta">${ev.date || ''}${ev.location ? ' • ' + ev.location : ''}</div><p style="margin-top:8px;">${ev.desc || ''}</p></div>`;
+      eventList.appendChild(card);
+    });
+  }
+
+  // ---------- Testimonials slider functions ----------
+  let testimonialSlides = [], testimonialDots = [], testimonialCurrent = 0, testimonialTimer;
+
+  function renderPublicTestimonials() {
+    const container = document.getElementById("testimonialList");
+    const dotsContainer = document.getElementById("testimonialDots");
+    if (!container || !dotsContainer) return;
+    container.innerHTML = "";
+    dotsContainer.innerHTML = "";
+
+    const testimonials = loadFromStorage(KEYS.TESTIMONIALS);
+    if (!testimonials.length) {
+      const slide = document.createElement('div');
+      slide.className = 'slide active';
+      slide.innerHTML = `<p>No testimonials yet.</p>`;
+      container.appendChild(slide);
+      testimonialSlides = container.querySelectorAll('.slide');
+      testimonialDots = dotsContainer.querySelectorAll('button');
+      testimonialCurrent = 0;
+      clearInterval(testimonialTimer);
+      return;
+    }
+
+    testimonials.forEach((t, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide' + (i === 0 ? ' active' : '');
+      slide.innerHTML = `<p>"${t.message}"</p><div style="margin-top:10px; display:flex; align-items:center; gap:12px; justify-content:center;"><img src="${t.image}" alt="${t.name}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;"><h4>- ${t.name}</h4></div>`;
+      container.appendChild(slide);
+
+      const dot = document.createElement('button');
+      if (i === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => showTestimonial(i));
+      dotsContainer.appendChild(dot);
+    });
+
+    testimonialSlides = container.querySelectorAll('.slide');
+    testimonialDots = dotsContainer.querySelectorAll('button');
+    testimonialCurrent = 0;
+    resetTestimonialTimer();
+  }
+
+  function showTestimonial(index) {
+    if (!testimonialSlides.length) return;
+    testimonialSlides[testimonialCurrent].classList.remove('active');
+    if (testimonialDots[testimonialCurrent]) testimonialDots[testimonialCurrent].classList.remove('active');
+    testimonialCurrent = index;
+    testimonialSlides[testimonialCurrent].classList.add('active');
+    if (testimonialDots[testimonialCurrent]) testimonialDots[testimonialCurrent].classList.add('active');
+    resetTestimonialTimer();
+  }
+
+  function nextTestimonial() {
+    if (!testimonialSlides.length) return;
+    const next = (testimonialCurrent + 1) % testimonialSlides.length;
+    showTestimonial(next);
+  }
+
+  function resetTestimonialTimer() {
+    clearInterval(testimonialTimer);
+    if (testimonialSlides.length > 1) testimonialTimer = setInterval(nextTestimonial, 5000);
+  }
+
+  // ---------- Form handling functions (unified) ----------
+  function handleFormSubmission(formId, templateId, successMsgId, errorMsgId, storageKey, dataFormatter) {
+    const formEl = document.getElementById(formId);
+    if (formEl) {
+      formEl.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = formEl.querySelector('button[type="submit"]');
+        const loggedInUser = localStorage.getItem(KEYS.LOGGED_IN_USER);
+
+        if (formId === 'registrationForm' && !loggedInUser) {
+            alert("You must be logged in to submit a registration.");
+            // Redirect to registration section and then open login modal
+            document.getElementById('register').scrollIntoView({behavior: 'smooth'});
+            setTimeout(openLoginModal, 500);
+            return;
+        }
+        
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Submitting...';
+        }
+
+        if (formId === 'registrationForm') {
+          const regTimeHidden = document.getElementById('regTimeHidden');
+          if (regTimeHidden) regTimeHidden.value = new Date().toLocaleString();
+          
+          const regEmailInput = document.getElementById('regEmail');
+          regEmailInput.value = JSON.parse(loggedInUser).email;
+        }
+        
+        const sendPromise = (window.emailjs) ? emailjs.sendForm(CONFIG.EMAILJS_SERVICE_ID, templateId, formEl) : Promise.reject('EmailJS not available');
+
+        sendPromise.then(() => {
+          flash(successMsgId);
+          const data = dataFormatter(formEl);
+          const list = loadFromStorage(storageKey);
+          list.push(data);
+          saveToStorage(storageKey, list);
+        }).catch((error) => {
+          console.error('EmailJS failed to send:', error);
+          flash(errorMsgId);
+        }).finally(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Submit Registration';
+          }
+          formEl.reset();
+          updateLoginLinks(); // This will refresh history
+          renderAdminDashboard();
+        });
+      });
+    }
+  }
+
+  handleFormSubmission('contactForm', CONFIG.EMAILJS_TEMPLATE_ID, 'successMsg', 'errorMsg', KEYS.SUBS, (form) => {
+    return {
+      name: form.elements.from_name.value,
+      email: form.elements.email_id.value,
+      contact_no: form.elements.contact_no.value,
+      message: form.elements.message.value,
+      time: new Date().toLocaleString()
+    };
+  });
+
+  handleFormSubmission('registrationForm', CONFIG.EMAILJS_REG_TEMPLATE_ID, 'regSuccess', 'regError', KEYS.REGS, (form) => {
+    return {
+      full_name: form.elements.name.value,
+      email: form.elements.email.value,
+      mobile: form.elements.mobile.value,
+      whatsapp: form.elements.whatsapp.value,
+      gender: form.elements.gender.value,
+      dob: form.elements.dob.value,
+      status: form.elements.status.value,
+      program: form.elements.program.value,
+      refNo: form.elements.refNo.value,
+      time: form.elements.time.value
+    };
+  });
+
+
+  // ---------- Admin modal open/close & auth fix ----------
+  const adminModal = document.getElementById('adminModal');
+  const footerTrigger = document.getElementById('footerTrigger');
+  const closeAdminBtn = document.getElementById('closeAdmin');
+  const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+  function openAdmin() {
+    if (!adminModal) return;
+    adminModal.style.display = 'flex';
+    const authed = !!localStorage.getItem(KEYS.AUThed);
+    const loginPanel = document.getElementById('loginPanel');
+    const dashboardEl = document.getElementById('dashboard');
+
+    if (authed) {
+      if (loginPanel) loginPanel.style.display = 'none';
+      if (dashboardEl) dashboardEl.style.display = 'block';
+      if (adminLogoutBtn) adminLogoutBtn.style.display = 'inline-flex';
+      renderAdminDashboard();
+    } else {
+      if (loginPanel) loginPanel.style.display = 'block';
+      if (dashboardEl) dashboardEl.style.display = 'none';
+      if (adminLogoutBtn) adminLogoutBtn.style.display = 'none';
+    }
+  }
+
+  function closeAdmin() {
+    if (adminModal) {
+      adminModal.style.display = 'none';
+      document.getElementById('loginPanel').style.display='block';
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('adminUser').value = '';
+      document.getElementById('adminPass').value = '';
+    }
+  }
+
+  if (footerTrigger) footerTrigger.addEventListener('click', openAdmin);
+  if (closeAdminBtn) closeAdminBtn.addEventListener('click', closeAdmin);
+  window.addEventListener('click', (e) => {
+    if (e.target === adminModal) closeAdmin();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.altKey && (e.key === 'b' || e.key === 'B')) {
+      e.preventDefault();
+      openAdmin();
+    }
+    if (e.key === 'Escape') closeAdmin();
+  });
+
+  // ---------- Login / Logout fix ----------
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value;
+      
+      const loggedInUser = localStorage.getItem(KEYS.LOGGED_IN_USER);
+      if (loggedInUser) {
+          const adminLoginError = document.getElementById('adminLoginError');
+          adminLoginError.textContent = 'Please log out of your user account first.';
+          adminLoginError.style.display = 'block';
+          setTimeout(() => adminLoginError.style.display = 'none', 5000);
+          return;
+      }
+
+      if (u === CONFIG.ADMIN_USER && p === CONFIG.ADMIN_PASS) {
+        localStorage.setItem(KEYS.AUThed, '1');
+        openAdmin();
+      } else {
+        const err = document.getElementById('loginError');
+        if (err) {
+          err.style.display = 'block';
+          setTimeout(() => err.style.display = 'none', 3000);
+        }
+      }
+    });
+  }
+
+  if (adminLogoutBtn) {
+    adminLogoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(KEYS.AUThed);
+      closeAdmin();
+      setTimeout(() => {
+          document.getElementById('loginPanel').style.display = 'block';
+          document.getElementById('dashboard').style.display = 'none';
+          document.getElementById('adminLogoutBtn').style.display = 'none';
+      }, 300);
+    });
+  }
+
+  // ---------- User Login/Signup handlers ----------
+  const loginModal = document.getElementById('loginModal');
+  const loginLink = document.getElementById('loginLink');
+  const mobileLoginLink = document.getElementById('mobileLoginLink');
+  const registerNav = document.getElementById('registerNav');
+  const mobileRegisterLink = document.getElementById('mobileRegisterLink');
+  const closeLoginBtn = document.getElementById('closeLogin');
+  const userLoginBtn = document.getElementById('userLoginBtn');
+  const userSignupBtn = document.getElementById('userSignupBtn');
+  const userEmailInput = document.getElementById('userEmail');
+  const userPasswordInput = document.getElementById('userPassword');
+  const userAuthError = document.getElementById('userAuthError');
+  const notificationLink = document.getElementById('notificationLink');
+  const historyLink = document.getElementById('historyLink');
+  const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
+  const mobileHistoryBtn = document.getElementById('mobileHistoryBtn');
+  const registrationForm = document.getElementById('registrationForm');
+  const regSubmitBtn = document.getElementById('regSubmitBtn');
+
+  function openLoginModal() {
+    if (!loginModal) return;
+    loginModal.style.display = 'flex';
+  }
+
+  function closeLoginModal() {
+    if (loginModal) {
+      loginModal.style.display = 'none';
+      userAuthError.style.display = 'none';
+      userEmailInput.value = '';
+      userPasswordInput.value = '';
+    }
+  }
+
+  // Event handlers for new behavior
+  if (loginLink) loginLink.addEventListener('click', openLoginModal);
+  if (mobileLoginLink) mobileLoginLink.addEventListener('click', openLoginModal);
+  if (closeLoginBtn) closeLoginBtn.addEventListener('click', closeLoginModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === loginModal) closeLoginModal();
+  });
+  
+  // Fix: Clicks on nav registration links trigger login modal
+  const handleRegisterClick = (e) => {
+    if (!localStorage.getItem(KEYS.LOGGED_IN_USER)) {
+      e.preventDefault();
+      alert("You must be logged in to register for a program.");
+      openLoginModal();
+    }
+  };
+
+  if (registerNav) registerNav.addEventListener('click', handleRegisterClick);
+  if (mobileRegisterLink) mobileRegisterLink.addEventListener('click', handleRegisterClick);
+
+  // Fix: Clicks on registration button trigger login modal if not logged in
+  if (regSubmitBtn) {
+    regSubmitBtn.addEventListener('click', (e) => {
+      if (!localStorage.getItem(KEYS.LOGGED_IN_USER)) {
+        e.preventDefault();
+        alert("You must be logged in to submit a registration.");
+        openLoginModal();
+      }
+    });
+  }
+
+
+  function showUserAuthError(message) {
+    userAuthError.textContent = message;
+    userAuthError.style.display = 'block';
+    setTimeout(() => userAuthError.style.display = 'none', 5000);
+  }
+
+  if (userSignupBtn) {
+    userSignupBtn.addEventListener('click', () => {
+      const email = userEmailInput.value;
+      const password = userPasswordInput.value;
+      if (!email || !password) {
+        showUserAuthError('Please enter a valid email and password.');
+        return;
+      }
+      
+      const users = loadFromStorage(KEYS.USERS);
+      const userExists = users.some(user => user.email === email);
+      
+      if (userExists) {
+        showUserAuthError('This email is already registered.');
+      } else {
+        const newUser = {
+          email: email,
+          password: password, // In a real app, this would be hashed
+          createdAt: new Date().toISOString()
+        };
+        users.push(newUser);
+        saveToStorage(KEYS.USERS, users);
+        showUserAuthError('Sign-up successful! You can now log in.');
+        userEmailInput.value = '';
+        userPasswordInput.value = '';
+        renderAdminDashboard();
+      }
+    });
+  }
+
+  if (userLoginBtn) {
+    userLoginBtn.addEventListener('click', () => {
+      const email = userEmailInput.value;
+      const password = userPasswordInput.value;
+      if (!email || !password) {
+        showUserAuthError('Please enter your email and password.');
+        return;
+      }
+      
+      const users = loadFromStorage(KEYS.USERS);
+      const user = users.find(u => u.email === email && u.password === password);
+      
+      if (user) {
+        localStorage.setItem(KEYS.LOGGED_IN_USER, JSON.stringify({ email: user.email }));
+        showUserAuthError('Login successful!');
+        closeLoginModal();
+        updateLoginLinks();
+      } else {
+        showUserAuthError('Invalid email or password.');
+      }
+    });
+  }
+  
+  function updateLoginLinks() {
+    const loggedInUser = localStorage.getItem(KEYS.LOGGED_IN_USER);
+    const desktopLogin = document.getElementById('loginLink');
+    const mobileLogin = document.getElementById('mobileLoginLink');
+
+    const notifLink = document.getElementById('notificationLink');
+    const histLink = document.getElementById('historyLink');
+    const mobNotifBtn = document.getElementById('mobileNotificationBtn');
+    const mobHistBtn = document.getElementById('mobileHistoryBtn');
+    
+    const regSubmitBtn = document.getElementById('regSubmitBtn');
+    const registerNav = document.getElementById('registerNav');
+    const mobileRegisterLink = document.getElementById('mobileRegisterLink');
+
+    if (loggedInUser) {
+        desktopLogin.innerHTML = `<a href="#">Logout</a>`;
+        mobileLogin.innerHTML = `<a href="#">Logout</a>`;
+        desktopLogin.querySelector('a').onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem(KEYS.LOGGED_IN_USER);
+            updateLoginLinks();
+            renderNotification();
+            window.location.reload(); 
+        };
+        mobileLogin.querySelector('a').onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem(KEYS.LOGGED_IN_USER);
+            updateLoginLinks();
+            renderNotification();
+            window.location.reload(); 
+        };
+        notifLink.style.display = 'list-item';
+        histLink.style.display = 'list-item';
+        mobNotifBtn.style.display = 'block';
+        mobHistBtn.style.display = 'block';
+        regSubmitBtn.classList.remove('blinking');
+        regSubmitBtn.disabled = false;
+
+
+        renderNotification();
+
+    } else {
+        desktopLogin.innerHTML = `<a href="#">Login</a>`;
+        mobileLogin.innerHTML = `<a href="#">Login</a>`;
+        desktopLogin.querySelector('a').onclick = openLoginModal;
+        mobileLogin.querySelector('a').onclick = openLoginModal;
+
+        notifLink.style.display = 'none';
+        histLink.style.display = 'none';
+        mobNotifBtn.style.display = 'none';
+        mobHistBtn.style.display = 'none';
+        
+        regSubmitBtn.classList.add('blinking');
+        regSubmitBtn.disabled = false; // Kept as enabled to trigger the redirect on click
+    }
+    populateProgramSelect();
+  }
+
+  // ---------- Notification and History Modals ----------
+  const notificationModal = document.getElementById('notificationModal');
+  const closeNotificationBtn = document.getElementById('closeNotification');
+  const historyModal = document.getElementById('historyModal');
+  const closeHistoryBtn = document.getElementById('closeHistory');
+
+  if(notificationLink) notificationLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    notificationModal.style.display = 'flex';
+    markNotificationsAsRead();
+  });
+  if(mobileNotificationBtn) mobileNotificationBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    notificationModal.style.display = 'flex';
+    markNotificationsAsRead();
+  });
+  if(closeNotificationBtn) closeNotificationBtn.addEventListener('click', () => {
+    notificationModal.style.display = 'none';
+  });
+
+  if(historyLink) historyLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    historyModal.style.display = 'flex';
+    renderUserHistory();
+  });
+  if(mobileHistoryBtn) mobileHistoryBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    historyModal.style.display = 'flex';
+    renderUserHistory();
+  });
+  if(closeHistoryBtn) closeHistoryBtn.addEventListener('click', () => {
+    historyModal.style.display = 'none';
+  });
+  
+  function renderNotification() {
+    const loggedInUser = JSON.parse(localStorage.getItem(KEYS.LOGGED_IN_USER));
+    const notificationList = document.getElementById('notificationList');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+
+    if (!loggedInUser) {
+      notificationList.innerHTML = '';
+      notificationBadge.style.display = 'none';
+      mobileNotificationBadge.style.display = 'none';
+      return;
+    }
+
+    const notifications = loadFromStorage(KEYS.USER_NOTIFICATIONS + '_' + loggedInUser.email) || [];
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    notificationBadge.textContent = unreadCount;
+    mobileNotificationBadge.textContent = unreadCount;
+
+    notificationBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    mobileNotificationBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    
+    notificationList.innerHTML = '';
+    if (notifications.length === 0) {
+      document.getElementById('noNotifications').style.display = 'block';
+    } else {
+      document.getElementById('noNotifications').style.display = 'none';
+      notifications.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(notif => {
+        const li = document.createElement('li');
+        li.style = `padding: 12px; border-bottom: 1px solid #eef2f7; ${notif.read ? '' : 'background-color: #f7fafc; font-weight:bold; cursor:pointer;'}`;
+        li.innerHTML = `
+          <strong>New Event: ${notif.event.title}</strong>
+          <p style="font-size:14px; color:#556; margin-top:4px;">${notif.event.desc}</p>
+          <span style="font-size:12px; color:#889; margin-top:4px; display:block;">Published: ${new Date(notif.timestamp).toLocaleString()}</span>
+        `;
+        // Fix: Added event listener to redirect to event section and highlight the card
+        li.addEventListener('click', () => {
+            const eventId = notif.event.id;
+            closeNotificationBtn.click();
+            const eventSection = document.getElementById('events');
+            if(eventSection) {
+                eventSection.scrollIntoView({ behavior: 'smooth' });
+                // Optional: Highlight the event card
+                setTimeout(() => {
+                    const eventCard = document.querySelector(`[data-event-id="${eventId}"]`);
+                    if(eventCard) {
+                        eventCard.style.outline = '3px solid #1abc9c';
+                        setTimeout(() => {
+                            eventCard.style.outline = 'none';
+                        }, 5000);
+                    }
+                }, 1000);
+            }
+        });
+        notificationList.appendChild(li);
+      });
+    }
+  }
+  
+  function markNotificationsAsRead() {
+    const loggedInUser = JSON.parse(localStorage.getItem(KEYS.LOGGED_IN_USER));
+    if (!loggedInUser) return;
+    const userNotifications = loadFromStorage(KEYS.USER_NOTIFICATIONS + '_' + loggedInUser.email) || [];
+    userNotifications.forEach(notif => {
+      notif.read = true;
+    });
+    saveToStorage(KEYS.USER_NOTIFICATIONS + '_' + loggedInUser.email, userNotifications);
+    renderNotification();
+  }
+
+  function renderUserHistory() {
+    const loggedInUser = JSON.parse(localStorage.getItem(KEYS.LOGGED_IN_USER));
+    const historyTbody = document.getElementById('historyTbody');
+    if (!loggedInUser || !historyTbody) return;
+
+    const allRegistrations = loadFromStorage(KEYS.REGS) || [];
+    // Fix: Filter registrations by the logged in user's email
+    const userRegistrations = allRegistrations.filter(reg => reg.email === loggedInUser.email);
+    
+    historyTbody.innerHTML = '';
+    if (userRegistrations.length === 0) {
+      document.getElementById('noHistory').style.display = 'block';
+    } else {
+      document.getElementById('noHistory').style.display = 'none';
+      userRegistrations.forEach(reg => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${reg.program}</td>
+          <td>Registered</td>
+          <td>${reg.refNo}</td>
+          <td>${reg.time}</td>
+        `;
+        historyTbody.appendChild(tr);
+      });
+    }
+  }
+
+  // New function to populate the registration form's program select
+  function populateProgramSelect() {
+    const programSelect = document.getElementById('regProgram');
+    if (!programSelect) return;
+    programSelect.innerHTML = '<option value="">-- Select --</option>'; // Reset options
+
+    const today = new Date().toISOString().split('T')[0];
+    const events = loadFromStorage(KEYS.EVENTS)
+      .filter(ev => ev.date && ev.date >= today)
+      .sort((a,b) => a.date.localeCompare(b.date));
+
+    events.forEach(event => {
+      const option = document.createElement('option');
+      option.value = event.title;
+      option.textContent = event.title + ' (' + event.date + ')';
+      programSelect.appendChild(option);
+    });
+  }
+
+
+  // ---------- Admin: Tabs inside modal (delegation) ----------
+  document.getElementById('dashboard').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    const card = e.target.closest('.dash-card[data-goto]');
+    if (btn) {
+      document.querySelectorAll('#adminModal .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#adminModal .tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = document.getElementById(btn.dataset.tab);
+      if (tab) tab.classList.add('active');
+    }
+    if (card && card.dataset.goto) {
+      const targetBtn = document.querySelector(`#adminModal .tab-btn[data-tab="${card.dataset.goto}"]`);
+      if (targetBtn) targetBtn.click();
+    }
+  });
+
+  // ---------- Poster preview and file helper ----------
+  const posterInput = document.getElementById('evPoster');
+  const posterPreview = document.getElementById('posterPreview');
+  if (posterInput) {
+    posterInput.addEventListener('change', () => {
+      const file = posterInput.files[0];
+      if (!file) {
+        if (posterPreview) {
+          posterPreview.style.display = 'none';
+          posterPreview.src = '';
+        }
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        if (posterPreview) {
+          posterPreview.src = e.target.result;
+          posterPreview.style.display = 'block';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function resetEventForm() {
+    document.getElementById('editingId').value = '';
+    document.getElementById('evTitle').value = '';
+    document.getElementById('evDate').value = '';
+    document.getElementById('evLocation').value = '';
+    document.getElementById('evDesc').value = '';
+    if (posterInput) posterInput.value = '';
+    if (posterPreview) {
+      posterPreview.src = '';
+      posterPreview.style.display = 'none';
+    }
+    const saveBtn = document.getElementById('saveEventBtn');
+    if (saveBtn) saveBtn.textContent = 'Save Event';
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---------- Events Admin: Save / Edit / Delete ----------
+  async function saveEvent() {
+    const title = document.getElementById('evTitle').value.trim();
+    const date = document.getElementById('evDate').value;
+    const location = document.getElementById('evLocation').value.trim();
+    const desc = document.getElementById('evDesc').value.trim();
+    const editingId = document.getElementById('editingId').value;
+
+    if (!title || !date || !desc) {
+      alert('Please fill Title, Date and Description');
+      return;
+    }
+
+    let posterData = null;
+    if (posterInput && posterInput.files && posterInput.files[0]) {
+      try { posterData = await fileToDataUrl(posterInput.files[0]); } catch (e) { posterData = null; }
+    } else if (editingId) {
+      const events = loadFromStorage(KEYS.EVENTS);
+      const idx = events.findIndex(e => e.id === editingId);
+      posterData = idx > -1 ? events[idx].poster : null;
+    }
+
+    const events = loadFromStorage(KEYS.EVENTS);
+    let eventData;
+    if (editingId) {
+      const i = events.findIndex(e => e.id === editingId);
+      if (i > -1) {
+        events[i] = { ...events[i],
+          title,
+          date,
+          location,
+          desc,
+          poster: posterData
+        };
+        eventData = events[i];
+      }
+    } else {
+      const id = 'ev_' + Date.now();
+      eventData = {
+        id,
+        title,
+        date,
+        location,
+        desc,
+        poster: posterData
+      };
+      events.push(eventData);
+    }
+
+    saveToStorage(KEYS.EVENTS, events);
+    
+    if (!editingId) { // Only notify for new events
+      const allUsers = loadFromStorage(KEYS.USERS) || [];
+      allUsers.forEach(user => {
+        const userNotifs = loadFromStorage(KEYS.USER_NOTIFICATIONS + '_' + user.email) || [];
+        userNotifs.push({
+          event: eventData,
+          read: false,
+          timestamp: new Date().toISOString()
+        });
+        saveToStorage(KEYS.USER_NOTIFICATIONS + '_' + user.email, userNotifs);
+      });
+      renderNotification();
+    }
+    
+    renderAdminDashboard();
+    renderPublicEvents();
+    flash('saveMsg', 1800);
+    resetEventForm();
+  }
+
+  function renderAdminEvents() {
+    const tbody = document.getElementById('adminTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const events = loadFromStorage(KEYS.EVENTS).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    if (!events.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="6">No events yet</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    for (const ev of events) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="width:90px;"><img src="${ev.poster || 'https://via.placeholder.com/80'}" alt="${ev.title||'Poster'}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;"></td>
+        <td>${ev.title||''}</td>
+        <td>${ev.date||''}</td>
+        <td>${ev.location||''}</td>
+        <td style="max-width:280px;">${ev.desc||''}</td>
+        <td>
+          <div class="actions">
+            <button class="btn" onclick="startEdit('${ev.id}')">Edit</button>
+            <button class="btn secondary" onclick="deleteEvent('${ev.id}')">Delete</button>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  window.startEdit = function(id) {
+    const events = loadFromStorage(KEYS.EVENTS);
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    document.getElementById('editingId').value = ev.id;
+    document.getElementById('evTitle').value = ev.title || '';
+    document.getElementById('evDate').value = ev.date || '';
+    document.getElementById('evLocation').value = ev.location || '';
+    document.getElementById('evDesc').value = ev.desc || '';
+    if (ev.poster) {
+      posterPreview.src = ev.poster;
+      posterPreview.style.display = 'block';
+    } else {
+      posterPreview.style.display = 'none';
+    }
+    if (posterInput) posterInput.value = '';
+    document.getElementById('saveEventBtn').textContent = 'Update Event';
+    const evTabBtn = document.querySelector('#adminModal .tab-btn[data-tab="tab-events"]');
+    if (evTabBtn) evTabBtn.click();
+    const inner = document.querySelector('#adminModal .modal-inner');
+    if (inner) inner.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  window.deleteEvent = function(id) {
+    if (!confirm('Delete this event?')) return;
+    let events = loadFromStorage(KEYS.EVENTS);
+    events = events.filter(e => e.id !== id);
+    saveToStorage(KEYS.EVENTS, events);
+    renderAdminDashboard();
+    renderPublicEvents();
+  };
+
+  function clearAllEvents() {
+    if (!confirm('This will remove ALL events. Continue?')) return;
+    saveToStorage(KEYS.EVENTS, []);
+    renderAdminDashboard();
+    renderPublicEvents();
+  }
+
+  const saveEventBtn = document.getElementById('saveEventBtn');
+  if (saveEventBtn) saveEventBtn.addEventListener('click', saveEvent);
+  const resetEventBtn = document.getElementById('resetEventBtn');
+  if (resetEventBtn) resetEventBtn.addEventListener('click', resetEventForm);
+  const clearAllEventsBtn = document.getElementById('clearAllEventsBtn');
+  if (clearAllEventsBtn) clearAllEventsBtn.addEventListener('click', clearAllEvents);
+
+  // ---------- Contact Submissions Admin ----------
+  function renderAdminSubmissions() {
+    const tbody = document.getElementById('subsTbody');
+    const subs = loadFromStorage(KEYS.SUBS);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!subs.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5">No submissions yet</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    for (const s of subs) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${s.name||''}</td><td>${s.email||''}</td><td>${s.contact_no||''}</td><td style="max-width:360px;">${(s.message||'').toString().slice(0,200)}${(s.message||'').length>200?'…':''}</td><td>${s.time||''}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function downloadCSV() {
+    const subs = loadFromStorage(KEYS.SUBS);
+    if (!subs.length) {
+      alert('No submissions to download.');
+      return;
+    }
+    let csv = 'Name,Email,Contact No,Message,Time\n';
+    for (const s of subs) {
+      const row = [s.name, s.email, s.contact_no, (s.message || '').replace(/"/g, '""'), s.time].map(v => '"' + (v || '') + '"').join(',');
+      csv += row + '\n';
+    }
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'contact_submissions.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearSubmissions() {
+    if (!confirm('This will delete ALL contact submissions. Continue?')) return;
+    localStorage.removeItem(KEYS.SUBS);
+    renderAdminDashboard();
+  }
+
+  const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  if (downloadCsvBtn) downloadCsvBtn.addEventListener('click', downloadCSV);
+  const clearSubsBtn = document.getElementById('clearSubsBtn');
+  if (clearSubsBtn) clearSubsBtn.addEventListener('click', clearSubmissions);
+
+  // ---------- Testimonials Admin (add/delete with file upload) ----------
+  const testimonialFormEl = document.getElementById('testimonialForm');
+  if (testimonialFormEl) {
+    testimonialFormEl.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('tName').value.trim();
+      const message = document.getElementById('tMessage').value.trim();
+      const fileInput = document.getElementById('tImageFile');
+      if (!name || !message) return;
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          saveNewTestimonial(name, message, evt.target.result);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        saveNewTestimonial(name, message, "https://via.placeholder.com/80");
+      }
+      e.target.reset();
+    });
+  }
+
+  function saveNewTestimonial(name, message, image) {
+    const ts = loadFromStorage(KEYS.TESTIMONIALS);
+    ts.push({
+      name,
+      message,
+      image
+    });
+    saveToStorage(KEYS.TESTIMONIALS, ts);
+    renderAdminDashboard();
+  }
+
+  function renderAdminTestimonials() {
+    const list = document.getElementById('testimonialAdminList');
+    if (!list) return;
+    list.innerHTML = '';
+    const ts = loadFromStorage(KEYS.TESTIMONIALS);
+    if (!ts.length) {
+      list.innerHTML = '<li style="padding:12px;color:#6b7c93;">No testimonials yet</li>';
+      return;
+    }
+    ts.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.style.padding = '12px';
+      li.style.display = 'flex';
+      li.style.alignItems = 'center';
+      li.style.justifyContent = 'space-between';
+      li.innerHTML = `<div style="display:flex;align-items:center;gap:12px;"><img src="${t.image}" alt="${t.name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;"><div><strong>${t.name}</strong><div style="color:#556; max-width:520px;">${t.message}</div></div></div><div><button class="btn secondary" onclick="deleteTestimonial(${i})">Delete</button></div>`;
+      list.appendChild(li);
+    });
+  }
+
+  window.deleteTestimonial = function(index) {
+    if (!confirm('Delete this testimonial?')) return;
+    const ts = loadFromStorage(KEYS.TESTIMONIALS);
+    ts.splice(index, 1);
+    saveToStorage(KEYS.TESTIMONIALS, ts);
+    renderAdminDashboard();
+  };
+
+  // ---------- Registrations Admin ----------
+  function renderAdminRegistrations() {
+    const tbody = document.getElementById('regsTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const regs = loadFromStorage(KEYS.REGS);
+    if (!regs.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="10">No registrations yet</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    for (const r of regs) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.full_name||''}</td><td>${r.email||''}</td><td>${r.mobile||''}</td><td>${r.whatsapp||''}</td><td>${r.gender||''}</td><td>${r.dob||''}</td><td>${r.status||''}</td><td>${r.program||''}</td><td>${r.refNo||''}</td><td>${r.time||''}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function downloadRegsCSV() {
+    const regs = loadFromStorage(KEYS.REGS);
+    if (!regs.length) {
+      alert('No registrations to download.');
+      return;
+    }
+    let csv = 'Full Name,Email,Mobile,WhatsApp,Gender,DOB,Status,Program,Receipt Ref,Time\n';
+    for (const r of regs) {
+      const row = [r.full_name, r.email, r.mobile, r.whatsapp, r.gender, r.dob, r.status, r.program, r.refNo, r.time].map(v => '"' + (v || '') + '"').join(',');
+      csv += row + '\n';
+    }
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'program_registrations.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearRegistrations() {
+    if (!confirm('This will delete ALL program registrations. Continue?')) return;
+    localStorage.removeItem(KEYS.REGS);
+    renderAdminDashboard();
+  }
+
+  const downloadRegsCsvBtn = document.getElementById('downloadRegsCsvBtn');
+  if (downloadRegsCsvBtn) downloadRegsCsvBtn.addEventListener('click', downloadRegsCSV);
+  const clearRegsBtn = document.getElementById('clearRegsBtn');
+  if (clearRegsBtn) clearRegsBtn.addEventListener('click', clearRegistrations);
+  
+  // ---------- Users Master Admin ----------
+  function renderAdminUsers() {
+    const tbody = document.getElementById('usersTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const users = loadFromStorage(KEYS.USERS);
+    if (!users.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="3">No registered users yet.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    users.forEach((user, index) => {
+      const tr = document.createElement('tr');
+      const signupDate = user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A';
+      tr.innerHTML = `<td>${index + 1}</td><td>${user.email}</td><td>${signupDate}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function downloadUsersCsv() {
+    const users = loadFromStorage(KEYS.USERS);
+    if (!users.length) {
+      alert('No users to download.');
+      return;
+    }
+    let csv = 'User ID,Email,Sign-up Date\n';
+    users.forEach((user, index) => {
+      const data = [
+        index + 1,
+        user.email,
+        user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'
+      ].map(v => `"${v}"`).join(',');
+      csv += data + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'registered_users.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const downloadUsersCsvBtn = document.getElementById('downloadUsersCsvBtn');
+  if (downloadUsersCsvBtn) downloadUsersCsvBtn.addEventListener('click', downloadUsersCsv);
+
+  // ---------- Dashboard helpers (unified) ----------
+  function animateCountUp(el, target, duration = 700) {
+    if (!el) return;
+    target = Number(target) || 0;
+    const start = 0,
+      startTs = performance.now();
+    function step(ts) {
+      const p = Math.min((ts - startTs) / duration, 1);
+      el.textContent = Math.floor(p * target);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = String(target);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function updateDashboard() {
+    const visits = getSiteVisits();
+    const regs = loadFromStorage(KEYS.REGS).length;
+    const subs = loadFromStorage(KEYS.SUBS).length;
+    const usersCount = loadFromStorage(KEYS.USERS).length;
+
+    animateCountUp(document.getElementById('dashVisitCount'), visits);
+    animateCountUp(document.getElementById('dashRegCount'), regs);
+    animateCountUp(document.getElementById('dashContactCount'), subs);
+    animateCountUp(document.getElementById('dashUsersCount'), usersCount);
+
+    const now = new Date();
+    const lastEl = document.getElementById('dashLastUpdated');
+    if (lastEl) lastEl.textContent = 'Last Updated: ' + now.toLocaleString();
+  }
+
+  const resetDashboardBtn = document.getElementById('resetDashboardBtn');
+  if (resetDashboardBtn) resetDashboardBtn.addEventListener('click', () => {
+    if (!confirm('Reset visits, registrations, and contacts?')) return;
+    localStorage.setItem(KEYS.VISITS, '0');
+    localStorage.removeItem(KEYS.REGS);
+    localStorage.removeItem(KEYS.SUBS);
+    localStorage.removeItem(KEYS.USERS);
+    renderAdminDashboard();
+  });
+
+  function renderAdminDashboard() {
+    renderAdminEvents();
+    renderAdminSubmissions();
+    renderAdminTestimonials();
+    renderAdminRegistrations();
+    renderAdminUsers();
+    updateDashboard();
+    renderPublicTestimonials(); 
+    renderPublicEvents(currentFilter); 
+  }
+
+  // ---------- On load: tabs, search, auth state, initial renders ----------
+  document.addEventListener('DOMContentLoaded', () => {
+    incrementSiteVisits();
+    const authed = !!localStorage.getItem(KEYS.AUThed);
+    if (adminLogoutBtn && authed) {
+      adminLogoutBtn.style.display = 'inline-flex';
+    }
+
+    const tabButtons = document.querySelectorAll('.event-tab-btn');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.tab;
+        renderPublicEvents();
+      });
+    });
+
+    const eventSearchEl = document.getElementById('eventSearch');
+    if (eventSearchEl) {
+      eventSearchEl.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderPublicEvents();
+      });
+    }
+
+    renderPublicEvents();
+    renderPublicTestimonials();
+
+    if (authed) {
+      renderAdminDashboard();
+    }
+    updateLoginLinks(); 
+  });
+</script>
+
+</body>
+</html>
